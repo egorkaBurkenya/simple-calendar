@@ -32,7 +32,7 @@
     cursor: default;
 }
 
-.item p{ 
+.item__tasks_count{ 
     position: absolute;
     font-size: 10px;
     width: 15px;
@@ -71,5 +71,6 @@
 
 .day_modal{ 
     position: absolute;
+    z-index: 1000;
 }
 

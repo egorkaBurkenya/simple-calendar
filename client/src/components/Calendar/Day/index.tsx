@@ -1,46 +1,81 @@
 import React from 'react';
-import styles from  '../index.module.css';
-import { useGetDayTasksCount } from '../../../hooks/useGetDayTasksCount';
-import {ExtraModal} from 'server-os-uikit';
 
-interface iDayProps {
+import { ExtraModal } from 'server-os-uikit';
+
+import { useGetDayTasks } from '../../../hooks/useGetDayTasks';
+import { useAddNewTask } from '../../../hooks/useAddNewTask';
+
+import styles from  '../index.module.css';
+
+export interface iDayProps {
     children: number | string;
     fullDayPath: string;
+    isItemModalOpen: boolean;
+    setIsItemModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const Day: React.FC<iDayProps> = ({children, fullDayPath}) => {
+const Day: React.FC<iDayProps> = ({children, fullDayPath, isItemModalOpen, setIsItemModalOpen}) => {
 
     const [isModalOpen, setIsModalOpen] = React.useState(false)
+    const { tasks, getTasks } = useGetDayTasks(fullDayPath);
+    const { addTask } = useAddNewTask(fullDayPath)
 
-    const tasks_count = useGetDayTasksCount(fullDayPath);
+    const onClick = () => {        
+        if (isModalOpen) {
+            setIsItemModalOpen(prev => false)
+            setIsModalOpen(prev=>false)
+        } else if (isItemModalOpen == false) {
+            getTasks()
+            setIsItemModalOpen(prev => true)
+            setIsModalOpen(prev=>true)
+        }
+    }
+
+    const show_tasks_list = () => {
+        // ! Костыль, что бы не тратить много времени
+        if (tasks.length != 0) {
+            alert(tasks.join("\n"))
+        }
+    }
+
+    const add_new_task_to_day_list = () => {
+        // ! Костыль, что бы не тратить много времени
+        const task = prompt(`Enter new task to ${fullDayPath} day`, "finish test task!!!")
+        // console.log(task);
+        addTask(task!)
+    }
+
 
     return (
         <div 
-            onClick={() => setIsModalOpen(prev=>!prev)}
+            onClick={onClick}
             className={styles.item} 
             style={{cursor: children != 0 ? "pointer" : "default"}}
             >
-            {tasks_count > 0 && <p>{tasks_count}</p>}
             {children != 0 ? children : <div />}
-            {/* {isModalOpen && <ExtraModal 
+            {isModalOpen && isItemModalOpen && <ExtraModal 
                 width={100}
                 className={styles.day_modal} 
                 items={
-                [
-                    {
-                        type: "item", 
-                        options: {
-                            children: "NewTask", 
-                            onClick: () => {alert("add new task")
-                        }}},
-                    {
-                        type: "item", 
-                        options: {
-                            children: "Task List", 
-                            onClick: () => {alert("Task List")
-                        }}},
-                ]
-            }/>} */}
+                    [
+                        {
+                            type: "item", 
+                            options: {
+                                children: "New Task", 
+                                onClick: add_new_task_to_day_list
+                            }},
+                        {
+                            type: "line"
+                        },
+                        {
+                            type: "item", 
+                            options: {
+                                children: "Task List", 
+                                onClick: show_tasks_list
+                            }},
+                    ]
+                }
+                />}
         </div>
     );
 };
